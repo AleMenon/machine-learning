@@ -3,10 +3,12 @@ import numpy as np
 import pandas as pd
 import graphviz
 from RandomForest import RandomForest
+from pathlib import Path
 
 np.random.seed(1234)
 
-PATH = "./../datasets/treino_sinais_vitais_com_label.csv"
+PATH = Path(__file__).resolve().parent
+DATASET_PATH =  PATH.parent / "datasets" / "treino_sinais_vitais_com_label.csv"
 
 def add_nodes_edges(dot, node, feature_names, node_id=0):
     
@@ -73,7 +75,7 @@ def accuracy(y_true, y_pred):
         return accuracy
 
 if __name__ == "__main__":
-    dataset = pd.read_csv(PATH)
+    dataset = pd.read_csv(DATASET_PATH)
     dataset = dataset.drop(columns=["id", "p_sist", "p_diast", "gravidade"])
 
     X = dataset.drop("classe", axis=1)

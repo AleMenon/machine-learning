@@ -3,13 +3,12 @@ import numpy as np
 from DecisionTree import DecisionTree
 import pandas as pd
 import graphviz
-from sklearn.tree import DecisionTreeClassifier as SklearnDecisionTree # A árvore do Sklearn
-from sklearn.tree import plot_tree
-import matplotlib.pyplot as plt
+from pathlib import Path
 
 np.random.seed(1234)
 
-PATH = "./../datasets/treino_sinais_vitais_com_label.csv"
+PATH = Path(__file__).resolve().parent
+DATASET_PATH =  PATH.parent / "datasets" / "treino_sinais_vitais_com_label.csv"
 
 def tree_visual_representations():
     print("\n--- Estrutura da Árvore de Decisão ---")
@@ -87,7 +86,7 @@ def accuracy(y_test, y_pred):
 
 if __name__ == "__main__":
 
-    dataset = pd.read_csv(PATH)
+    dataset = pd.read_csv(DATASET_PATH)
     dataset = dataset.drop(columns=["id", "p_sist", "p_diast", "gravidade"])
 
     X = dataset.drop("classe", axis=1)

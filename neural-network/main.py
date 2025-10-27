@@ -4,16 +4,18 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.preprocessing import OneHotEncoder
+from pathlib import Path
 
 from neuralNetwork import NeuralNetworkNumpy
 
-PATH = "./../datasets/treino_sinais_vitais_com_label.csv"
+PATH = Path(__file__).resolve().parent
+DATASET_PATH =  PATH.parent / "datasets" / "treino_sinais_vitais_com_label.csv"
 
 if __name__ == "__main__":
     # --- Carregamento e Preparação dos Dados ---
 
     # Carregar o dataset
-    df = pd.read_csv(PATH)
+    df = pd.read_csv(DATASET_PATH)
 
     # Definir as features (X) e o alvo (y)
     # 'p_sist' e 'p_diast' são excluídas, assim como 'id' e 'classe'.
