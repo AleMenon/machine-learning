@@ -173,11 +173,11 @@ if __name__ == "__main__":
     # c) Padronização das Features (X)
     #    Redes neurais convergem muito melhor quando as features de entrada estão na mesma escala.
     scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
+    x_scaled = scaler.fit_transform(X)
 
     # d) Divisão em Treino e Validação
     #    Vamos usar 80% para treino e 20% para validar o modelo
-    X_train, X_val, y_train, y_val = train_test_split(X_scaled, y_one_hot, test_size=0.2, random_state=42)
+    x_train, x_val, y_train, y_val = train_test_split(x_scaled, y_one_hot, test_size=0.2, random_state=42)
 
     # Para a avaliação final, também precisaremos dos rótulos de validação no formato original (não one-hot)
     y_val_indices = np.argmax(y_val, axis=1)
@@ -185,9 +185,9 @@ if __name__ == "__main__":
     # --- Treinamento e Avaliação do Modelo ---
 
     # Definir hiperparâmetros
-    X_train = np.array(X_train)
+    x_train = np.array(x_train)
     y_train = np.array(y_train)
-    input_size = X_train.shape[1]    # 4 features
+    input_size = x_train.shape[1]    # 4 features
     hidden_size = 64                 # 64 neurônios na camada escondida
     output_size = y_train.shape[1]   # 4 classes
     epochs = 2000
@@ -199,7 +199,7 @@ if __name__ == "__main__":
     nn = NeuralNetworkNumpy(input_size=input_size, hidden_size=hidden_size, output_size=output_size)
 
     # Treinar a rede
-    loss_history = nn.fit(X_train, y_train, epochs=epochs, learning_rate=learning_rate, print_loss_every=200)
+    loss_history = nn.fit(x_train, y_train, epochs=epochs, learning_rate=learning_rate, print_loss_every=200)
 
     print("--- Treinamento Concluído ---")
 
@@ -207,7 +207,7 @@ if __name__ == "__main__":
 
     print("\n--- Avaliação no Conjunto de Validação ---")
     # Fazer previsões no conjunto de validação
-    y_pred = nn.predict(X_val)
+    y_pred = nn.predict(x_val)
 
     # y_pred está em índices [0, 1, 2, 3]
     # y_val_indices (que criamos lá em cima) também está [0, 1, 2, 3]
