@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 np.random.seed(1234)
 
-PATH = "C:/Gabriel/UTFPR/Sistemas Inteligentes/Machine Learning/machine-learning/datasets/treino_sinais_vitais_com_label.csv"
+PATH = "./../datasets/treino_sinais_vitais_com_label.csv"
 
 def tree_visual_representations():
     print("\n--- Estrutura da Árvore de Decisão ---")

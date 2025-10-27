@@ -6,7 +6,7 @@ from RandomForest import RandomForest
 
 np.random.seed(1234)
 
-PATH = "C:/Gabriel/UTFPR/Sistemas Inteligentes/Machine Learning/machine-learning/datasets/treino_sinais_vitais_com_label.csv"
+PATH = "./../datasets/treino_sinais_vitais_com_label.csv"
 
 def add_nodes_edges(dot, node, feature_names, node_id=0):
     
