@@ -86,6 +86,17 @@ def accuracy(y_test, y_pred):
 
 if __name__ == "__main__":
 
+    with open(DATASET_PATH, "r") as f:
+        first_line = f.readline()
+    
+    if "id" not in first_line:
+        with open(DATASET_PATH, "r+") as f:
+            conteudo = f.read()
+            f.seek(0)  # volta pro início do arquivo
+            nome_colunas = "id,p_sist,p_diast,qpa,pulso,resp,gravidade,classe\n"
+            f.write(nome_colunas + conteudo)
+            
+
     dataset = pd.read_csv(DATASET_PATH)
     dataset = dataset.drop(columns=["id", "p_sist", "p_diast", "gravidade"])
 
