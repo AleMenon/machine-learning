@@ -24,99 +24,99 @@ class DecisionTree:
         self.root = None
 
     # Método para treinar a árvore de decisão
-    def fit(self, X, y):
+    def fit(self, data, labels):
         # Define o número de features a serem usadas
-        self.n_features = X.shape[1] if not self.n_features else min(X.shape[1], self.n_features)
+        self.n_features = data.shape[1] if not self.n_features else min(data.shape[1], self.n_features)
         # Constrói a árvore recursivamente
-        self.root = self._grow_tree(X, y)
+        self.root = self._build_tree(data, labels)
 
     # Método recursivo para construir a árvore
-    def _grow_tree(self, X, y, depth=0):
-        n_samples, n_feats = X.shape 
-        n_labels = len(np.unique(y))
+    def _build_tree(self, data, labels, depth=0):
+        n_samples, n_feats = data.shape 
+        n_classes = len(np.unique(labels))
 
         # Critérios de parada: profundidade máxima, nó puro ou poucas amostras
-        if (depth >= self.max_depth or n_labels == 1 or n_samples < self.min_samples_split):
-            leaf_value = self._most_common_label(y)
+        if (depth >= self.max_depth or n_classes == 1 or n_samples < self.min_samples_split):
+            leaf_value = self._most_common_label(labels)
             return Node(value=leaf_value)
 
         # Seleciona aleatoriamente um subconjunto de features para avaliar
-        feat_idxs = np.random.choice(n_feats, self.n_features, replace=False)
+        feature_indices = np.random.choice(n_feats, self.n_features, replace=False)
 
         # Encontra a melhor divisão para o nó atual
-        best_feature, best_thresh, best_gain = self._best_split(X, y, feat_idxs)
+        best_feature, best_thresh, best_gain = self._find_best_split(data, labels, feature_indices)
         if best_gain <= 0:
-            leaf_value = self._most_common_label(y)
+            leaf_value = self._most_common_label(labels)
             return Node(value=leaf_value)
 
-        left_idxs, right_idxs = self._split(X[:, best_feature], best_thresh)
-        left = self._grow_tree(X[left_idxs, :], y[left_idxs], depth + 1)
-        right = self._grow_tree(X[right_idxs, :], y[right_idxs], depth + 1)
+        left_indices, right_indices = self._partition(data[:, best_feature], best_thresh)
+        left = self._build_tree(data[left_indices, :], labels[left_indices], depth + 1)
+        right = self._build_tree(data[right_indices, :], labels[right_indices], depth + 1)
         return Node(best_feature, best_thresh, left, right)
 
     # Método para encontrar a melhor divisão para um nó
-    def _best_split(self, X, y, feat_idxs):
+    def _find_best_split(self, data, labels, feature_indices):
         best_gain = -1
         split_idx, split_threshold = None, None
 
-        for feat_idx in feat_idxs:
-            X_column = X[:, feat_idx]
-            thresholds = np.unique(X_column)
+        for feat_idx in feature_indices:
+            feature_values = data[:, feat_idx]
+            thresholds = np.unique(feature_values)
 
-            for thr in thresholds:
-                gain = self._information_gain(y, X_column, thr)
+            for threshold in thresholds:
+                gain = self._information_gain(labels, feature_values, threshold)
 
                 if gain > best_gain:
                     best_gain = gain
                     split_idx = feat_idx
-                    split_threshold = thr
+                    split_threshold = threshold
 
         return split_idx, split_threshold, best_gain
 
     # Método para calcular o ganho de informação
-    def _information_gain(self, y, X_column, threshold):
-        parent_entropy = self._entropy(y)
+    def _information_gain(self, labels, feature_values, threshold):
+        parent_entropy = self._entropy(labels)
 
-        left_idxs, right_idxs = self._split(X_column, threshold)
+        left_indices, right_indices = self._partition(feature_values, threshold)
 
-        if len(left_idxs) == 0 or len(right_idxs) == 0:
+        if len(left_indices) == 0 or len(right_indices) == 0:
             return 0
 
-        n = len(y)
-        n_l, n_r = len(left_idxs), len(right_idxs)
-        e_l, e_r = self._entropy(y[left_idxs]), self._entropy(y[right_idxs])
-        child_entropy = (n_l / n) * e_l + (n_r / n) * e_r
+        n = len(labels)
+        n_left, n_right = len(left_indices), len(right_indices)
+        e_left, e_right = self._entropy(labels[left_indices]), self._entropy(labels[right_indices])
+        child_entropy = (n_left / n) * e_left + (n_right / n) * e_right
 
         information_gain = parent_entropy - child_entropy
         return information_gain
 
     # Método para dividir os dados com base em um limiar
-    def _split(self, X_column, split_thresh):
-        left_idxs = np.argwhere(X_column <= split_thresh).flatten()
-        right_idxs = np.argwhere(X_column > split_thresh).flatten()
-        return left_idxs, right_idxs
+    def _partition(self, feature_values, threshold):
+        left_indices = np.argwhere(feature_values <= threshold).flatten()
+        right_indices = np.argwhere(feature_values > threshold).flatten()
+        return left_indices, right_indices
 
     # Método para calcular a entropia
-    def _entropy(self, y):
-        hist = np.bincount(y)
-        ps = hist / len(y)
-        return -np.sum([p * np.log(p) for p in ps if p > 0])
+    def _entropy(self, labels):
+        hist = np.bincount(labels)
+        probabilities = hist / len(labels)
+        return -np.sum([p * np.log(p) for p in probabilities if p > 0])
 
     # Método para encontrar o rótulo mais comum em um conjunto de dados
-    def _most_common_label(self, y):
-        counter = Counter(y)
+    def _most_common_label(self, labels):
+        counter = Counter(labels)
         value = counter.most_common(1)[0][0]
         return value
 
     # Método para fazer previsões em novos dados
-    def predict(self, X):
-        return np.array([self._traverse_tree(x, self.root) for x in X])
+    def predict(self, data):
+        return np.array([self._traverse_tree(sample, self.root) for sample in data])
 
     # Método recursivo para percorrer a árvore e fazer uma previsão
-    def _traverse_tree(self, x, node):
+    def _traverse_tree(self, sample, node):
         if node.is_leaf_node():
             return node.value
 
-        if x[node.feature] <= node.threshold:
-            return self._traverse_tree(x, node.left)
-        return self._traverse_tree(x, node.right)
+        if sample[node.feature] <= node.threshold:
+            return self._traverse_tree(sample, node.left)
+        return self._traverse_tree(sample, node.right)
