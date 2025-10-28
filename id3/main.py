@@ -8,61 +8,57 @@ from pathlib import Path
 np.random.seed(1234)
 
 PATH = Path(__file__).resolve().parent
-DATASET_PATH =  PATH.parent / "datasets" / "treino_sinais_vitais_com_label.csv"
+DATASET_PATH = PATH.parent / "datasets" / "treino_sinais_vitais_com_label.csv"
 
+# Função para representar visualmente a árvore de decisão
 def tree_visual_representations():
     print("\n--- Estrutura da Árvore de Decisão ---")
-    feature_names = X.columns.tolist() 
+    feature_names = X.columns.tolist()
     print_tree(clf.root, feature_names)
 
-    feature_names = X.columns.tolist() 
+    feature_names = X.columns.tolist()
 
     plot_tree_graphviz(clf, feature_names)
 
+# Função auxiliar para adicionar nós e arestas à visualização da árvore
 def add_nodes_edges(dot, node, feature_names, node_id=0):
-    
     if node.is_leaf_node():
         dot.node(str(node_id), label=f"Valor: {node.value}", shape="box")
         return node_id + 1
-    
+
     feature_name = feature_names[node.feature]
     label = f"{feature_name} <= {node.threshold:.2f}"
     dot.node(str(node_id), label=label, shape="ellipse")
-    
+
     left_child_id = node_id + 1
-    
     next_id = add_nodes_edges(dot, node.left, feature_names, left_child_id)
     dot.edge(str(node_id), str(left_child_id), label="True")
-    
+
     right_child_id = next_id
-    
     final_id = add_nodes_edges(dot, node.right, feature_names, right_child_id)
     dot.edge(str(node_id), str(right_child_id), label="False")
-    
+
     return final_id
 
+# Função para gerar uma visualização gráfica da árvore usando Graphviz
 def plot_tree_graphviz(tree, feature_names, filename="decision_tree_depth10"):
-    
     dot = graphviz.Digraph(comment='Decision Tree', format='svg')
-    
+
     dot.attr(size='150,150')
-    
     dot.attr('node', fontsize='8')
     dot.attr('edge', fontsize='8')
-
     dot.attr(ranksep='1.0', nodesep='0.5')
-    
+
     add_nodes_edges(dot, tree.root, feature_names)
-    
+
     try:
         dot.render(filename, view=True)
         print(f"\nÁrvore salva como '{filename}.svg'.")
-        
     except Exception as e:
         print(f"\nErro ao gerar a imagem da árvore: {e}")
 
+# Função para imprimir a árvore de decisão no console
 def print_tree(node, feature_names, depth=0):
-    
     indent = "  " * depth
 
     if node.is_leaf_node():
@@ -70,7 +66,6 @@ def print_tree(node, feature_names, depth=0):
         return
 
     feature_name = feature_names[node.feature]
-    
     print(f"{indent}Condição: {feature_name} <= {node.threshold:.2f}")
 
     print(f"{indent}--> True (Esquerda):")
@@ -79,42 +74,50 @@ def print_tree(node, feature_names, depth=0):
     print(f"{indent}--> False (Direita):")
     print_tree(node.right, feature_names, depth + 1)
 
+# Função para calcular a acurácia do modelo
 def accuracy(y_test, y_pred):
-        if hasattr(y_test, 'values'):
-            y_test = y_test.values
-        return np.sum(y_test == y_pred) / len(y_test)
+    if hasattr(y_test, 'values'):
+        y_test = y_test.values
+    return np.sum(y_test == y_pred) / len(y_test)  # Retorna a proporção de acertos
 
 if __name__ == "__main__":
-
     with open(DATASET_PATH, "r") as f:
         first_line = f.readline()
-    
+
     if "id" not in first_line:
         with open(DATASET_PATH, "r+") as f:
             conteudo = f.read()
-            f.seek(0)  # volta pro início do arquivo
+            f.seek(0) 
             nome_colunas = "id,p_sist,p_diast,qpa,pulso,resp,gravidade,classe\n"
             f.write(nome_colunas + conteudo)
-            
 
+    # Carrega o dataset e remove as colunas desnecessárias
     dataset = pd.read_csv(DATASET_PATH)
     dataset = dataset.drop(columns=["id", "p_sist", "p_diast", "gravidade"])
 
+    # Separa as features (X) e os rótulos (y)
     X = dataset.drop("classe", axis=1)
     y = dataset["classe"]
 
+    # Obtém os nomes das features e das classes
     feature_names = X.columns.tolist()
     class_names = [str(c) for c in sorted(y.unique())]
 
+    # Divide o dataset em conjuntos de treino e teste
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=1234
     )
 
+    # Cria e treina o modelo de árvore de decisão
     clf = DecisionTree(max_depth=10)
     clf.fit(X_train.values, y_train.values)
+
+    # Faz previsões no conjunto de teste
     predictions = clf.predict(X_test.values)
 
+    # Calcula e imprime a acurácia do modelo
     acc = accuracy(y_test, predictions)
     print(acc)
 
+    # Gera representações visuais da árvore
     tree_visual_representations()
