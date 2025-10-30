@@ -1,5 +1,5 @@
 <h1 align="center">Machine Learning</h1>
-Este repositório apresenta o desenvolvimento de experimentos e implementações de algoritmos de **aprendizado de máquina (Machine Learning)** utilizando **Python**.  
+Este repositório apresenta o desenvolvimento de experimentos e implementações de algoritmos de aprendizado de máquina (Machine Learning) utilizando Python.  
 
 ## Objetivo
 O trabalho tem como propósito **explorar e comparar diferentes algoritmos de aprendizado de máquina**, avaliando seus desempenhos em diferentes contextos e conjuntos de dados.  
